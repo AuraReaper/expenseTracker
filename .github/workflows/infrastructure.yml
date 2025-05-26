@@ -23,12 +23,20 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy Infrastructure Stack
+        id: deploy
         run: |
           aws cloudformation deploy \
             --template-file cloudformation-template--initial-infra.yaml \
             --stack-name infrastructure-stack \
             --capabilities CAPABILITY_NAMED_IAM \
-            --debug
+            --debug || {
+            echo "Deployment failed. Checking stack events..."
+            aws cloudformation describe-stack-events \
+              --stack-name infrastructure-stack \
+              --query "StackEvents[?ResourceStatus=='CREATE_FAILED' || ResourceStatus=='UPDATE_FAILED'].{Resource:LogicalResourceId,Status:ResourceStatus,Reason:ResourceStatusReason}" \
+              --output table
+            exit 1
+          }
 
       - name: Output Infrastructure Stack Info
         run: |
