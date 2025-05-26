@@ -22,6 +22,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Check and Delete Failed Stack
+        run: |
+          STACK_STATUS=$(aws cloudformation describe-stacks --stack-name infrastructure-stack --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "STACK_NOT_FOUND")
+          if [ "$STACK_STATUS" = "ROLLBACK_COMPLETE" ]; then
+            echo "Stack is in ROLLBACK_COMPLETE state. Deleting stack..."
+            aws cloudformation delete-stack --stack-name infrastructure-stack
+            echo "Waiting for stack deletion to complete..."
+            aws cloudformation wait stack-delete-complete --stack-name infrastructure-stack
+          elif [ "$STACK_STATUS" != "STACK_NOT_FOUND" ]; then
+            echo "Stack exists with status: $STACK_STATUS"
+          else
+            echo "Stack does not exist. Proceeding with deployment."
+          fi
+
       - name: Deploy Infrastructure Stack
         id: deploy
         run: |
