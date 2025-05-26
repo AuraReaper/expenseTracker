@@ -62,10 +62,10 @@ jobs:
 
       - name: Upload infrastructure outputs to S3
         env:
-          BUCKET_NAME: "expenseTrackerInfra" 
+          BUCKET_NAME: "expense-tracker-infra" 
           INFRA_FILE_NAME: "infrastructure-outputs.json"
         run: |
-          if ! aws s3api head-bucket --bucket-name "$BUCKET_NAME"; then
+          if ! aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
             aws s3 mb s3://$BUCKET_NAME --region ${{ env.AWS_REGION }}
           else
             echo "Bucket $BUCKET_NAME already exists"
