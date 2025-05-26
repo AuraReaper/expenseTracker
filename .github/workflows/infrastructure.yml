@@ -27,7 +27,8 @@ jobs:
           aws cloudformation deploy \
             --template-file cloudformation-template--initial-infra.yaml \
             --stack-name infrastructure-stack \
-            --capabilities CAPABILITY_NAMED_IAM
+            --capabilities CAPABILITY_NAMED_IAM \
+            --debug
 
       - name: Output Infrastructure Stack Info
         run: |
